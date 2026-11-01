@@ -99,9 +99,11 @@ audio{width:100%;margin-top:8px}
 .jlist{display:grid;gap:10px;margin-top:10px}
 .jlist button{background:linear-gradient(#fff,#ffe9a8);border-radius:16px;padding:12px;font-weight:800;font-size:18px;box-shadow:0 4px 0 #c99a2a;text-align:center}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+.readbtn{position:fixed;bottom:16px;left:16px;z-index:50;background:#ffd23f;color:#3a2a00;border-radius:999px;padding:14px 20px;font-size:20px;font-weight:800;box-shadow:0 5px 0 #c99a2a,0 8px 18px rgba(0,0,0,.3);display:flex;gap:8px;align-items:center}.readbtn:active{transform:translateY(3px)}
 </style>
 </head>
 <body>
+<button class="readbtn" id="readbtn" aria-label="הקראת המסך">🔊 הקרא לי</button>
 <div class="cloud">☁️</div><div class="cloud c2">☁️</div><div class="waves"></div>
 <div class="wrap">
 <header class="top">
@@ -219,6 +221,18 @@ const sfx={
  key(){tone(900,0,.05,"square",.06)}
 };
 function say(t){if(muted||!window.speechSynthesis)return;try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.lang="he-IL";u.rate=.9;speechSynthesis.speak(u)}catch(e){}}
+
+function readScreen(){
+ if(!window.speechSynthesis)return;
+ const sc=document.querySelector(".screen.on");if(!sc)return;
+ const c=sc.cloneNode(true);const od=[...sc.querySelectorAll(".opts button")].map(b=>b.textContent).join(", ");
+ c.querySelectorAll("button,.pad,.strip,.prog,audio,.addcoin,.stack,.stars,.chest,.confetti").forEach(x=>x.remove());
+ let t=(c.innerText||c.textContent||"")+(od?" . האפשרויות: "+od:"");
+ t=t.replace(/×/g," כפול ").replace(/÷/g," חלקי ").replace(/=/g," שווה ").replace(/\+/g," ועוד ").replace(/[-−]/g," פחות ").replace(/₪/g," שקלים ").replace(/[?□]/g," כמה ").replace(/\s+/g," ").trim();
+ if(!t)return;
+ try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.lang="he-IL";u.rate=.85;speechSynthesis.speak(u)}catch(e){}
+}
+$("readbtn").onclick=readScreen;
 $("mute").onclick=()=>{muted=!muted;$("mute").textContent=muted?"🔇":"🔊";if(!muted){ctx();sfx.key()}};
 
 /* ---------- ניווט ---------- */
