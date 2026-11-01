@@ -220,23 +220,30 @@ const sfx={
  splash(){const a=ctx();if(!a||muted)return;const len=a.sampleRate*.5,buf=a.createBuffer(1,len,a.sampleRate),d=buf.getChannelData(0);for(let i=0;i<len;i++)d[i]=(Math.random()*2-1)*(1-i/len);const s=a.createBufferSource(),g=a.createGain(),fl=a.createBiquadFilter();fl.type="lowpass";fl.frequency.value=900;g.gain.value=.12;s.buffer=buf;s.connect(fl);fl.connect(g);g.connect(a.destination);s.start()},
  key(){tone(900,0,.05,"square",.06)}
 };
-function say(t){if(muted||!window.speechSynthesis)return;try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.lang="he-IL";u.rate=.9;speechSynthesis.speak(u)}catch(e){}}
-
+let aud=null,aq=[];
+function stopSay(){aq=[];if(aud){aud.onended=null;aud.onerror=null;aud.pause();aud=null}}
+function nextClip(){const k=aq.shift();if(!k){aud=null;return}aud=new Audio("audio/"+k+".mp3");aud.onended=()=>setTimeout(nextClip,150);aud.onerror=nextClip;aud.play().catch(()=>{})}
+function playKeys(keys){stopSay();aq=keys.filter(Boolean);nextClip()}
+function say(t){if(muted)return;const n=+t;if(String(n)===String(t)&&n>=0&&n<=100)playKeys(["n"+n])}
+function eqKeys(s){const k=[];String(s).split(/(\d+|×|÷|=|\?|□)/).forEach(p=>{if(!p)return;if(/^\d+$/.test(p)){if(+p<=100)k.push("n"+p)}else if(p==="×")k.push("kefel");else if(p==="÷")k.push("chelki");else if(p==="=")k.push("shave");else if(p==="?"||p==="□")k.push("kama")});return k}
 function readScreen(){
- if(!window.speechSynthesis)return;
- const sc=document.querySelector(".screen.on");if(!sc)return;
- const c=sc.cloneNode(true);const od=[...sc.querySelectorAll(".opts button")].map(b=>b.textContent).join(", ");
- c.querySelectorAll("button,.pad,.strip,.prog,audio,.addcoin,.stack,.stars,.chest,.confetti").forEach(x=>x.remove());
- let t=(c.innerText||c.textContent||"")+(od?" . האפשרויות: "+od:"");
- t=t.replace(/×/g," כפול ").replace(/÷/g," חלקי ").replace(/=/g," שווה ").replace(/\+/g," ועוד ").replace(/[-−]/g," פחות ").replace(/₪/g," שקלים ").replace(/[?□]/g," כמה ").replace(/\s+/g," ").trim();
- if(!t)return;
- try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.lang="he-IL";u.rate=.85;speechSynthesis.speak(u)}catch(e){}
+ if(aud){stopSay();return}
+ const sc=document.querySelector(".screen.on");if(!sc)return;const id=sc.id;let k=[];
+ if(id==="s-story")k=[storyIdx==="win"?"storywin":"story"+storyIdx];
+ else if(id==="s-diag"){const q=dq[di];k=[q.coins?"diag_count":q.seq?"diag_seq":q.text==="כמה זה?"?"diag_how":"diag_miss"].concat(eqKeys(q.seq?q.seq.join(" , "):(q.eq||"")));k.push("opts");$("d-opts").querySelectorAll("button").forEach(b=>{if(+b.textContent<=100)k.push("n"+b.textContent)})}
+ else if(id==="s-diagres")k=["dr"+save.skill];
+ else if(id==="s-map")k=["map"];
+ else if(id==="s-build")k=[(li===0?"b0_":"b_")+N];
+ else if(id==="s-quiz"){const q=qs[qi];k=[(q.kind==="count"?"c":q.kind==="total"?"t":"v")+N].concat(eqKeys(q.p.map(x=>Array.isArray(x)?x[0]:x).join(" ")))}
+ else if(id==="s-win")k=["w_"+N];
+ else if(id==="s-joke")k=["joke"];
+ playKeys(k);
 }
 $("readbtn").onclick=readScreen;
 $("mute").onclick=()=>{muted=!muted;$("mute").textContent=muted?"🔇":"🔊";if(!muted){ctx();sfx.key()}};
 
 /* ---------- ניווט ---------- */
-function show(id){document.querySelectorAll(".screen").forEach(s=>s.classList.remove("on"));$(id).classList.add("on");window.scrollTo({top:0,behavior:"smooth"})}
+function show(id){stopSay();document.querySelectorAll(".screen").forEach(s=>s.classList.remove("on"));$(id).classList.add("on");window.scrollTo({top:0,behavior:"smooth"})}
 function confetti(n){const c=$("confetti"),em=["⭐","🪙","💎","🎉","✨","🦜"];for(let i=0;i<(n||40);i++){const e=document.createElement("i");e.textContent=em[i%em.length];e.style.right=Math.random()*100+"vw";e.style.animationDuration=2+Math.random()*2.5+"s";e.style.animationDelay=Math.random()*.6+"s";c.appendChild(e);setTimeout(()=>e.remove(),5200)}}
 function updGems(){$("gems").textContent="💎 "+save.gems}
 
@@ -250,7 +257,7 @@ const STORY=[
 ];
 const WIN_STORY="🏆 עשיתם את זה! פתחתם את כל התיבות, ואתם עכשיו <b>קפטן הכפולות של חמש</b>! הקפטן והתוכי חמוש גאים בכם. אפשר לחזור לכל תיבה ולהרוויח עוד כוכבים!";
 let storyIdx=0;
-function showStory(i,after){storyIdx=i;$("story-text").innerHTML=i==="win"?WIN_STORY:STORY[i];$("story-next").textContent=i===0?"יאללה, מתחילים! ⚓":"להפלגה! ⛵";$("story-next").onclick=()=>{sfx.splash();after?after():goMap()};show("s-story");say(String($("story-text").textContent).slice(0,140))}
+function showStory(i,after){storyIdx=i;$("story-text").innerHTML=i==="win"?WIN_STORY:STORY[i];$("story-next").textContent=i===0?"יאללה, מתחילים! ⚓":"להפלגה! ⛵";$("story-next").onclick=()=>{sfx.splash();after?after():goMap()};show("s-story")}
 $("re-story").onclick=()=>showStory(0,goMap);
 
 /* ---------- מפה ---------- */
@@ -370,7 +377,7 @@ function nextQ(){
  const isDemo=demoMode&&qi===0;
  $("pad").style.display=isDemo?"none":"";$("demo-bar").style.display=isDemo?"":"none";
  buildPad();
- if(isDemo){setTimeout(()=>openAid(true),600);say(storyOf(q,N))}
+ if(isDemo){setTimeout(()=>openAid(true),600)}
  else if(phase()===1)openAid(false);
 }
 $("demo-go").onclick=()=>{demoMode=false;save.demo[N]=1;persist();qs=makeQs(N);qi=0;nextQ()};
@@ -495,7 +502,7 @@ function diagEnd(){
   "סיימנו! נתחיל בקצב נוח: המון מטבעות לעזרה, והסבר צעד אחרי צעד. אין מרוץ, כל תיבה בזמן שלך. 🪙",
   "יפה מאוד! אתם כבר מכירים חלק מהחמישיות. אפתח לכם את התיבות מ-"+LEVELS[3]+" ₪, ועדיין אעזור עם מטבעות כשצריך. 👍",
   "וואו, אתם חזקים! אפתח לכם את התיבות מ-"+LEVELS[6]+" ₪, עם פחות עזרה ויותר חידות. אם יהיה קשה, אחזור לעזור. 🚀"][sk];
- $("dr-text").textContent=msg;$("dr-go").onclick=goMap;show("s-diagres");say(msg.slice(0,120))}
+ $("dr-text").textContent=msg;$("dr-go").onclick=goMap;show("s-diagres")}
 updGems();showStory(0,save.diag?goMap:goDiag);
 if(Object.keys(save.done).length){$("story-next").textContent="להמשך ההפלגה ⛵"}
 save.seen.intro=1;persist();
