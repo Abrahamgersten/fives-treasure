@@ -220,14 +220,14 @@ const sfx={
  splash(){const a=ctx();if(!a||muted)return;const len=a.sampleRate*.5,buf=a.createBuffer(1,len,a.sampleRate),d=buf.getChannelData(0);for(let i=0;i<len;i++)d[i]=(Math.random()*2-1)*(1-i/len);const s=a.createBufferSource(),g=a.createGain(),fl=a.createBiquadFilter();fl.type="lowpass";fl.frequency.value=900;g.gain.value=.12;s.buffer=buf;s.connect(fl);fl.connect(g);g.connect(a.destination);s.start()},
  key(){tone(900,0,.05,"square",.06)}
 };
-let aud=null,aq=[];
-function stopSay(){aq=[];if(aud){aud.onended=null;aud.onerror=null;aud.pause();aud=null}}
-function nextClip(){const k=aq.shift();if(!k){aud=null;return}aud=new Audio("audio/"+k+".mp3");aud.onended=()=>setTimeout(nextClip,150);aud.onerror=nextClip;aud.play().catch(()=>{})}
+const aud=new Audio();let aq=[],reading=false,gapT=0;
+function stopSay(){clearTimeout(gapT);aq=[];reading=false;aud.onended=null;aud.onerror=null;aud.pause()}
+function nextClip(){const k=aq.shift();if(!k){reading=false;return}aud.onended=()=>{gapT=setTimeout(nextClip,150)};aud.onerror=nextClip;aud.src="audio/"+k+".mp3?v=2";aud.play().catch(e=>{if(e.name==="NotAllowedError")stopSay()})}
 function playKeys(keys){stopSay();aq=keys.filter(Boolean);nextClip()}
 function say(t){if(muted)return;const n=+t;if(String(n)===String(t)&&n>=0&&n<=100)playKeys(["n"+n])}
 function eqKeys(s){const k=[];String(s).split(/(\d+|×|÷|=|\?|□)/).forEach(p=>{if(!p)return;if(/^\d+$/.test(p)){if(+p<=100)k.push("n"+p)}else if(p==="×")k.push("kefel");else if(p==="÷")k.push("chelki");else if(p==="=")k.push("shave");else if(p==="?"||p==="□")k.push("kama")});return k}
 function readScreen(){
- if(aud){stopSay();return}
+ if(reading){stopSay();return}
  const sc=document.querySelector(".screen.on");if(!sc)return;const id=sc.id;let k=[];
  if(id==="s-story")k=[storyIdx==="win"?"storywin":"story"+storyIdx];
  else if(id==="s-diag"){const q=dq[di];k=[q.coins?"diag_count":q.seq?"diag_seq":q.text==="כמה זה?"?"diag_how":"diag_miss"].concat(eqKeys(q.seq?q.seq.join(" , "):(q.eq||"")));k.push("opts");$("d-opts").querySelectorAll("button").forEach(b=>{if(+b.textContent<=100)k.push("n"+b.textContent)})}
@@ -236,8 +236,8 @@ function readScreen(){
  else if(id==="s-build")k=[(li===0?"b0_":"b_")+N];
  else if(id==="s-quiz"){const q=qs[qi];k=[(q.kind==="count"?"c":q.kind==="total"?"t":"v")+N].concat(eqKeys(q.p.map(x=>Array.isArray(x)?x[0]:x).join(" ")))}
  else if(id==="s-win")k=["w_"+N];
- else if(id==="s-joke")k=["joke"];
- playKeys(k);
+ else if(id==="s-joke"&&$("j-audio").paused)k=["joke"];
+ playKeys(k);reading=k.length>0;
 }
 $("readbtn").onclick=readScreen;
 $("mute").onclick=()=>{muted=!muted;$("mute").textContent=muted?"🔇":"🔊";if(!muted){ctx();sfx.key()}};
