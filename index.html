@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>אוצר החמישיות – משחק כפולות חמש</title>
+<meta name="theme-color" content="#0b3d5c">
+<style>
+:root{--sea:#0b3d5c;--sea2:#1479a8;--gold:#ffc83d;--gold2:#e8a200;--ink:#102a3a;--ok:#2fbf71;--bad:#ef5b5b;--sand:#fff1c9}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;min-height:100%;font-family:"Rubik","Heebo","Segoe UI",Arial,sans-serif;color:var(--ink)}
+body{background:linear-gradient(#58c4ee 0%,#1c86b5 45%,#0b3d5c 100%) fixed;overflow-x:hidden}
+button{font:inherit;cursor:pointer;border:0;color:inherit}
+button:focus-visible{outline:4px solid #fff;outline-offset:3px}
+.waves{position:fixed;inset:auto 0 0 0;height:90px;background:
+ radial-gradient(circle at 20px 0,transparent 22px,rgba(255,255,255,.16) 23px,rgba(255,255,255,.16) 30px,transparent 31px) 0 0/60px 40px repeat-x;pointer-events:none;animation:wv 6s linear infinite}
+@keyframes wv{to{background-position:-60px 0}}
+.cloud{position:fixed;top:6vh;font-size:64px;opacity:.85;animation:fl 38s linear infinite;pointer-events:none}
+.cloud.c2{top:16vh;font-size:44px;animation-duration:55s;animation-delay:-20s}
+@keyframes fl{from{right:-90px}to{right:110vw}}
+.wrap{position:relative;max-width:880px;margin:0 auto;padding:14px 14px 90px}
+header.top{display:flex;align-items:center;gap:10px;justify-content:space-between;color:#fff;margin-bottom:8px}
+h1{margin:0;font-size:clamp(22px,5vw,34px);text-shadow:0 3px 0 rgba(0,0,0,.25)}
+.chips{display:flex;gap:8px}
+.chip{background:rgba(255,255,255,.22);border-radius:99px;padding:6px 14px;font-weight:700;color:#fff;backdrop-filter:blur(4px)}
+.iconbtn{background:rgba(255,255,255,.25);color:#fff;width:44px;height:44px;border-radius:50%;font-size:22px}
+.card{background:#fffdf4;border-radius:26px;padding:18px;box-shadow:0 10px 0 rgba(0,0,0,.18),0 20px 40px rgba(0,0,0,.2)}
+.screen{display:none}.screen.on{display:block;animation:pop .35s ease}
+@keyframes pop{from{transform:translateY(14px) scale(.97);opacity:0}to{transform:none;opacity:1}}
+.big{font-size:clamp(20px,4.6vw,28px);line-height:1.6}
+.btn{background:linear-gradient(var(--gold),var(--gold2));border-radius:20px;padding:14px 26px;font-weight:800;font-size:22px;box-shadow:0 6px 0 #a56d00;transition:transform .08s}
+.btn:active{transform:translateY(5px);box-shadow:0 1px 0 #a56d00}
+.btn.sec{background:linear-gradient(#e9f6ff,#bfe3f7);box-shadow:0 6px 0 #6aa4c2;font-size:18px;padding:10px 18px}
+.btn[disabled]{opacity:.45;pointer-events:none}
+.hero{display:flex;gap:14px;align-items:center}
+.parrot{font-size:84px;animation:bob 2.2s ease-in-out infinite;flex:none}
+@keyframes bob{50%{transform:translateY(-10px) rotate(-5deg)}}
+.map{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:12px;margin-top:14px}
+.lv{position:relative;border-radius:20px;padding:12px 4px;text-align:center;font-weight:800;font-size:26px;background:linear-gradient(#fff,#ffe9a8);box-shadow:0 5px 0 #c99a2a}
+.lv small{display:block;font-size:15px;letter-spacing:2px;min-height:20px}
+.lv.lock{background:#cfd8dc;box-shadow:0 5px 0 #90a4ae;color:#78909c;pointer-events:none}
+.lv.cur{animation:pulse 1.2s infinite}
+@keyframes pulse{50%{transform:scale(1.07)}}
+.stage-head{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.target{font-size:clamp(34px,9vw,60px);font-weight:900;color:var(--gold2);text-shadow:0 3px 0 #0002}
+.chestzone{position:relative;margin-top:10px;border-radius:22px;padding:12px;background:linear-gradient(#ffe7a0,#f5c86a);min-height:210px;border:4px dashed #b8821a}
+.stack{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;align-content:flex-start;min-height:120px}
+.cn{width:clamp(44px,10vw,64px);height:clamp(44px,10vw,64px);border-radius:50%;object-fit:cover;box-shadow:0 3px 0 #0006;animation:drop .35s cubic-bezier(.3,1.6,.5,1);background:#bbb}
+@keyframes drop{from{transform:translateY(-70px) scale(1.5);opacity:0}to{transform:none;opacity:1}}
+.cnwrap{position:relative;display:inline-block}
+.cnwrap b{position:absolute;inset:auto 0 -4px 0;text-align:center;font-size:13px;color:#fff;background:#0b3d5ccc;border-radius:8px;margin:0 6px;line-height:16px}
+.total{font-size:clamp(30px,7vw,46px);font-weight:900;text-align:center;margin:6px 0}
+.row{display:flex;gap:12px;justify-content:center;align-items:center;flex-wrap:wrap;margin-top:10px}
+.addcoin{width:112px;height:112px;border-radius:50%;padding:0;background:none;filter:drop-shadow(0 7px 0 #0005);transition:transform .1s}
+.addcoin:active{transform:scale(.9) translateY(4px)}
+.addcoin img{width:100%;height:100%;border-radius:50%;object-fit:cover;animation:shine 3s infinite}
+@keyframes shine{50%{filter:brightness(1.25) saturate(1.2)}}
+.plus{font-size:20px;font-weight:800;color:#0b3d5c}
+.msg{min-height:30px;text-align:center;font-weight:700;font-size:20px;margin-top:8px}
+.eq{direction:ltr;display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:10px;font-size:clamp(34px,10vw,64px);font-weight:900;margin:16px 0;unicode-bidi:isolate}
+.box{display:inline-flex;min-width:1.5em;height:1.3em;align-items:center;justify-content:center;border-radius:16px;background:#fff;border:5px dashed var(--sea2);color:var(--sea2);padding:0 .25em}
+.box.shake{animation:sh .4s}
+@keyframes sh{20%,60%{transform:translateX(-10px)}40%,80%{transform:translateX(10px)}}
+.pad{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;max-width:340px;margin:0 auto}
+.pad button{background:linear-gradient(#fff,#d9efff);border-radius:18px;font-size:30px;font-weight:800;padding:12px 0;box-shadow:0 5px 0 #7bb4d2}
+.pad button:active{transform:translateY(4px);box-shadow:0 1px 0 #7bb4d2}
+.pad .go{background:linear-gradient(#7ff0ae,var(--ok));box-shadow:0 5px 0 #17844b;color:#fff}
+.prog{display:flex;gap:6px;justify-content:center;margin:6px 0}
+.dot{width:16px;height:16px;border-radius:50%;background:#d6d6d6}.dot.d{background:var(--ok)}.dot.c{background:var(--gold);transform:scale(1.3)}
+.hint{background:#e8f6ff;border-radius:16px;padding:10px 14px;margin-top:12px;font-size:19px;display:none}
+.hint.on{display:block}
+.stars{font-size:54px;text-align:center;letter-spacing:6px}
+.confetti{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:50}
+.confetti i{position:absolute;top:-30px;font-style:normal;font-size:30px;animation:fall linear forwards}
+@keyframes fall{to{transform:translateY(110vh) rotate(540deg)}}
+.chest{font-size:90px;text-align:center;transition:transform .3s}
+.chest.open{animation:wob .8s}
+@keyframes wob{30%{transform:scale(1.3) rotate(-8deg)}60%{transform:scale(1.2) rotate(8deg)}}
+.treasure{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;font-size:34px}
+.strip{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;margin-top:8px;direction:ltr}
+.strip span{background:#fff;border-radius:12px;padding:4px 10px;font-weight:800;font-size:18px;box-shadow:0 2px 0 #0003}
+.strip span.now{background:var(--gold)}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="cloud">☁️</div><div class="cloud c2">☁️</div><div class="waves"></div>
+<div class="wrap">
+<header class="top">
+ <h1>🏴‍☠️ אוצר החמישיות</h1>
+ <div class="chips"><div class="chip" id="gems">💎 0</div><button class="iconbtn" id="mute" aria-label="צלילים">🔊</button></div>
+</header>
+
+<!-- פתיחה / סיפור -->
+<section class="screen on card" id="s-story">
+ <div class="hero"><div class="parrot">🦜</div><div class="big" id="story-text"></div></div>
+ <div class="row"><button class="btn" id="story-next">יאללה, מתחילים! ⚓</button></div>
+</section>
+
+<!-- מפה -->
+<section class="screen card" id="s-map">
+ <div class="stage-head"><div class="big"><b>מפת האוצרות</b> – בחר/י תיבה</div><button class="btn sec" id="re-story">📜 הסיפור</button></div>
+ <div class="strip" id="strip"></div>
+ <div class="map" id="map"></div>
+</section>
+
+<!-- בנייה -->
+<section class="screen card" id="s-build">
+ <div class="stage-head"><button class="btn sec" id="b-back">🗺️ מפה</button><div class="big">צריך בדיוק: <span class="target" id="b-target">10</span></div></div>
+ <div class="big" id="b-help" style="text-align:center">כל מטבע שווה 5 ₪. לחצו על המטבע כדי להוסיף.</div>
+ <div class="chestzone"><div class="stack" id="stack"></div></div>
+ <div class="total"><span id="b-total">0</span> ₪</div>
+ <div class="strip" id="b-strip"></div>
+ <div class="row">
+  <button class="addcoin" id="add" aria-label="הוסף מטבע של 5"><img src="assets/coin5.jpg" alt="מטבע של חמישה שקלים"></button>
+  <div class="plus">+5</div>
+  <button class="btn sec" id="undo">↩️ הורד מטבע</button>
+  <button class="btn sec" id="clear">🧹 מחק הכול</button>
+ </div>
+ <div class="msg" id="b-msg"></div>
+</section>
+
+<!-- תרגילים -->
+<section class="screen card" id="s-quiz">
+ <div class="stage-head"><div class="big">🔑 המנעול של <b id="q-n">10</b> ₪</div><button class="btn sec" id="q-hint">💡 רמז</button></div>
+ <div class="prog" id="prog"></div>
+ <div class="eq" id="eq"></div>
+ <div class="hint" id="hint"></div>
+ <div class="pad" id="pad"></div>
+ <div class="msg" id="q-msg"></div>
+</section>
+
+<!-- ניצחון שלב -->
+<section class="screen card" id="s-win">
+ <div class="chest" id="chest">🧰</div>
+ <div class="stars" id="stars"></div>
+ <div class="big" id="win-text" style="text-align:center"></div>
+ <div class="treasure" id="treasure"></div>
+ <div class="row"><button class="btn" id="win-next">לתיבה הבאה ➡️</button><button class="btn sec" id="win-map">🗺️ למפה</button></div>
+</section>
+</div>
+<div class="confetti" id="confetti"></div>
+
+<script>
+(function(){
+"use strict";
+const $=id=>document.getElementById(id);
+const LEVELS=Array.from({length:19},(_,i)=>10+5*i);
+const KEY="fives-treasure-v1";
+let save={done:{},gems:0,seen:{}};
+try{Object.assign(save,JSON.parse(localStorage.getItem(KEY)||"{}"))}catch(e){}
+const persist=()=>{try{localStorage.setItem(KEY,JSON.stringify(save))}catch(e){}};
+
+/* ---------- צלילים (נוצרים בדפדפן, בלי קבצים חיצוניים) ---------- */
+let ac=null,muted=false;
+function ctx(){if(!ac){const A=window.AudioContext||window.webkitAudioContext;if(A)ac=new A()}if(ac&&ac.state==="suspended")ac.resume();return ac}
+function tone(f,t0,d,type,vol){const a=ctx();if(!a||muted)return;const o=a.createOscillator(),g=a.createGain();o.type=type||"sine";o.frequency.value=f;g.gain.setValueAtTime(vol||.2,a.currentTime+t0);g.gain.exponentialRampToValueAtTime(.0001,a.currentTime+t0+d);o.connect(g);g.connect(a.destination);o.start(a.currentTime+t0);o.stop(a.currentTime+t0+d+.02)}
+const sfx={
+ coin(n){const b=1500+(n%8)*90;tone(b,0,.09,"square",.08);tone(b*1.5,.06,.25,"triangle",.14)},
+ undo(){tone(500,0,.1,"triangle",.15);tone(350,.08,.12,"triangle",.15)},
+ ok(){[523,659,784].forEach((f,i)=>tone(f,i*.09,.25,"triangle",.2))},
+ bad(){tone(180,0,.2,"sawtooth",.15);tone(140,.12,.28,"sawtooth",.13)},
+ chest(){[392,494,587,784,988,1175].forEach((f,i)=>tone(f,i*.11,.4,"triangle",.2));for(let i=0;i<8;i++)tone(2400+i*140,.7+i*.05,.12,"square",.05)},
+ splash(){const a=ctx();if(!a||muted)return;const len=a.sampleRate*.5,buf=a.createBuffer(1,len,a.sampleRate),d=buf.getChannelData(0);for(let i=0;i<len;i++)d[i]=(Math.random()*2-1)*(1-i/len);const s=a.createBufferSource(),g=a.createGain(),fl=a.createBiquadFilter();fl.type="lowpass";fl.frequency.value=900;g.gain.value=.12;s.buffer=buf;s.connect(fl);fl.connect(g);g.connect(a.destination);s.start()},
+ key(){tone(900,0,.05,"square",.06)}
+};
+function say(t){if(muted||!window.speechSynthesis)return;try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.lang="he-IL";u.rate=.9;speechSynthesis.speak(u)}catch(e){}}
+$("mute").onclick=()=>{muted=!muted;$("mute").textContent=muted?"🔇":"🔊";if(!muted){ctx();sfx.key()}};
+
+/* ---------- ניווט ---------- */
+function show(id){document.querySelectorAll(".screen").forEach(s=>s.classList.remove("on"));$(id).classList.add("on");window.scrollTo({top:0,behavior:"smooth"})}
+function confetti(n){const c=$("confetti"),em=["⭐","🪙","💎","🎉","✨","🦜"];for(let i=0;i<(n||40);i++){const e=document.createElement("i");e.textContent=em[i%em.length];e.style.right=Math.random()*100+"vw";e.style.animationDuration=2+Math.random()*2.5+"s";e.style.animationDelay=Math.random()*.6+"s";c.appendChild(e);setTimeout(()=>e.remove(),5200)}}
+function updGems(){$("gems").textContent="💎 "+save.gems}
+
+/* ---------- סיפור ---------- */
+const STORY=[
+"ברוכים הבאים, מלחים! אני התוכי <b>חמוש</b>, הסייר של קפטן חמישי. הקפטן הסתיר אוצר ענק בתיבות קסומות על האיים. אבל כל תיבה ננעלה בקסם: <b>היא נפתחת רק ממטבעות של 5 ₪</b>, ורק בסכום המדויק! מי שמצליח לפתוח אותן, מתרגל ומתחזק בכפולות של 5, ומקבל <b>יהלומים</b>. מוכנים להפוך לקפטנים?",
+"וואו! הגעתם לאי הצבים. הקפטן אומר: מי שיודע לספור בקפיצות של חמש, ספר/י 5, 10, 15, 20... לא מפסיק עד מאה! ממשיכים, המפה מחכה!",
+"אי הדקלים! כאן הנעילות מסובכות יותר. כל תיבה מסתירה חידה שבה חסר מספר. מצאו אותו וקדימה!",
+"שמעתם? מסתובבת בים ספינת שודדים! היא רוצה את האוצר לעצמה. רק קפטן שיודע חילוק וכפל של חמש יגבר עליה. עוד קצת!",
+"האי האחרון! תיבת המלך מחכה בגודל 100 ₪. אתם כבר מומחים של חמישיות. עוד קצת, ותהיו קפטן הים!"
+];
+const WIN_STORY="🏆 עשיתם את זה! פתחתם את כל התיבות, ואתם עכשיו <b>קפטן הכפולות של חמש</b>! הקפטן והתוכי חמוש גאים בכם. אפשר לחזור לכל תיבה ולהרוויח עוד כוכבים!";
+let storyIdx=0;
+function showStory(i,after){storyIdx=i;$("story-text").innerHTML=i==="win"?WIN_STORY:STORY[i];$("story-next").textContent=i===0?"יאללה, מתחילים! ⚓":"להפלגה! ⛵";$("story-next").onclick=()=>{sfx.splash();after?after():goMap()};show("s-story");say(String($("story-text").textContent).slice(0,140))}
+$("re-story").onclick=()=>showStory(0,goMap);
+
+/* ---------- מפה ---------- */
+function stars(l){return save.done[l]||0}
+function unlocked(i){return i===0||stars(LEVELS[i-1])>0}
+function goMap(){
+ updGems();const m=$("map");m.innerHTML="";let cur=-1;
+ LEVELS.forEach((n,i)=>{const b=document.createElement("button");const u=unlocked(i),s=stars(n);if(u&&!s&&cur<0)cur=i;
+  b.className="lv"+(u?"":" lock")+(cur===i&&!s?" cur":"");b.innerHTML=(u?n:"🔒")+"<small>"+(s?"⭐".repeat(s):(u?"🧰":""))+"</small>";
+  b.onclick=()=>startLevel(i);m.appendChild(b)});
+ $("strip").innerHTML="";[5,10,15,20,25].forEach(n=>{const s=document.createElement("span");s.textContent=n;$("strip").appendChild(s)});
+ const sp=document.createElement("span");sp.textContent="…100";$("strip").appendChild(sp);
+ show("s-map")}
+
+/* ---------- בנייה ---------- */
+let li=0,N=10,coins=0;
+function startLevel(i){li=i;N=LEVELS[i];coins=0;mistakes=0;$("b-target").textContent=N;$("b-msg").textContent="";renderStack();show("s-build");
+ $("b-help").textContent=i===0?"כל מטבע שווה 5 ₪. לחצו על המטבע כדי להוסיף, עד שהסכום יהיה בדיוק "+N+".":"בנו בדיוק "+N+" ₪ עם מטבעות של 5.";}
+function renderStack(){
+ const st=$("stack");st.innerHTML="";
+ for(let i=1;i<=coins;i++){const w=document.createElement("span");w.className="cnwrap";const im=document.createElement("img");im.src="assets/coin5.jpg";im.alt="";im.className="cn";w.appendChild(im);const b=document.createElement("b");b.textContent=i*5;w.appendChild(b);st.appendChild(w)}
+ $("b-total").textContent=coins*5;
+ const s=$("b-strip");s.innerHTML="";for(let k=1;k<=coins;k++){const sp=document.createElement("span");sp.textContent=k*5;if(k===coins)sp.className="now";s.appendChild(sp)}
+}
+$("add").onclick=()=>{
+ if(coins*5>=N){$("b-msg").textContent="🛑 כבר הגעת ל-"+N+"! אפשר להוריד מטבע אם צריך.";sfx.bad();return}
+ coins++;sfx.coin(coins);renderStack();say(String(coins*5));
+ if(coins*5===N){$("b-msg").textContent="✅ מושלם! "+coins+" מטבעות × 5 = "+N;sfx.ok();confetti(18);setTimeout(()=>startQuiz(),1700)}
+ else $("b-msg").textContent="";
+};
+$("undo").onclick=()=>{if(coins>0){coins--;sfx.undo();renderStack();$("b-msg").textContent=""}};
+$("clear").onclick=()=>{coins=0;sfx.undo();renderStack();$("b-msg").textContent=""};
+$("b-back").onclick=goMap;
+
+/* ---------- תרגילים עם משתנה חסר ---------- */
+let qs=[],qi=0,typed="",mistakes=0,hintShown=false;
+function makeQs(n){
+ const k=n/5;
+ const T=[
+  {p:["5","×","□","=",n],a:k,h:"כמה פעמים 5 נכנס ב-"+n+"? "+k+" מטבעות."},
+  {p:["□","×","5","=",n],a:k,h:"הסדר לא משנה בכפל: "+k+" × 5 = "+n},
+  {p:[n,"÷","5","=","□"],a:k,h:"חלקו את "+n+" ל-5 מטבעות בכל ערימה. כמה ערימות?"},
+  {p:[n,"÷","□","=","5"],a:k,h:"כמה קבוצות של 5 יש ב-"+n+"? ספרו מטבעות: "+k},
+  {p:["□","÷","5","=",k],a:n,h:"מה המספר שאם מחלקים ב-5 מקבלים "+k+"? "+k+" × 5"},
+  {p:["5","×",k,"=","□"],a:n,h:"קפצו בחמישיות "+k+" פעמים."},
+  {p:[k,"×","5","=","□"],a:n,h:"קפצו בחמישיות "+k+" פעמים."},
+  {p:["□","×",k,"=",n],a:5,h:"כמה שווה כל מטבע?"},
+  {p:[n,"÷",k,"=","□"],a:5,h:"חלקו את "+n+" ל-"+k+" מטבעות שווים."}
+ ];
+ const useable=k>=2?T:T.filter((t,i)=>i<8);
+ const pool=useable.slice();const out=[];
+ while(out.length<4&&pool.length){out.push(pool.splice(Math.floor(Math.random()*pool.length),1)[0])}
+ return out;
+}
+function startQuiz(){
+ qs=makeQs(N);qi=0;mistakes=0;$("q-n").textContent=N;nextQ();show("s-quiz")}
+function nextQ(){
+ typed="";hintShown=false;$("hint").classList.remove("on");$("q-msg").textContent="";
+ const q=qs[qi];const e=$("eq");e.innerHTML="";
+ q.p.forEach(t=>{const s=document.createElement(t==="□"?"span":"span");if(t==="□"){s.className="box";s.id="ans";s.textContent="?"}else s.textContent=t;e.appendChild(s)});
+ const p=$("prog");p.innerHTML="";qs.forEach((_,i)=>{const d=document.createElement("span");d.className="dot"+(i<qi?" d":(i===qi?" c":""));p.appendChild(d)});
+ buildPad();
+}
+function buildPad(){
+ const p=$("pad");p.innerHTML="";
+ ["1","2","3","4","5","6","7","8","9","⌫","0","✔"].forEach(k=>{const b=document.createElement("button");b.textContent=k;if(k==="✔")b.className="go";b.onclick=()=>press(k);p.appendChild(b)})}
+function press(k){
+ sfx.key();
+ if(k==="⌫")typed=typed.slice(0,-1);
+ else if(k==="✔")return check();
+ else if(typed.length<3)typed+=k;
+ $("ans").textContent=typed||"?";
+}
+function check(){
+ if(!typed)return;
+ const q=qs[qi],ans=$("ans");
+ if(+typed===q.a){
+  ans.textContent=q.a;ans.style.cssText="border-style:solid;border-color:#2fbf71;color:#2fbf71";sfx.ok();confetti(10);$("q-msg").textContent="🎉 נכון!";
+  setTimeout(()=>{qi++;qi>=qs.length?finish():nextQ()},900);
+ }else{
+  mistakes++;sfx.bad();ans.classList.remove("shake");void ans.offsetWidth;ans.classList.add("shake");
+  $("q-msg").textContent="🤔 כמעט! נסו שוב.";typed="";setTimeout(()=>{ans.textContent="?"},400);
+  if(mistakes>=2||true){showHint()}
+ }
+}
+function showHint(){const q=qs[qi],h=$("hint");h.textContent="💡 "+q.h+(coinPic(q)?"":"");h.classList.add("on")}
+function coinPic(){return false}
+$("q-hint").onclick=showHint;
+document.addEventListener("keydown",e=>{
+ if(!$("s-quiz").classList.contains("on"))return;
+ if(/^[0-9]$/.test(e.key))press(e.key);else if(e.key==="Backspace")press("⌫");else if(e.key==="Enter")press("✔")});
+
+/* ---------- סיום שלב ---------- */
+function finish(){
+ const st=mistakes===0?3:(mistakes<=2?2:1);
+ const gain=st+(save.done[N]?0:2);
+ save.done[N]=Math.max(save.done[N]||0,st);save.gems+=gain;persist();updGems();
+ $("chest").className="chest";void $("chest").offsetWidth;$("chest").classList.add("open");$("chest").textContent="🎁";
+ $("stars").textContent="⭐".repeat(st)+"☆".repeat(3-st);
+ $("treasure").textContent="";for(let i=0;i<gain;i++){const s=document.createElement("span");s.textContent="💎";$("treasure").appendChild(s)}
+ const allDone=LEVELS.every(n=>stars(n)>0);
+ $("win-text").innerHTML="🔓 התיבה של <b>"+N+" ₪</b> נפתחה! קיבלתם <b>"+gain+"</b> יהלומים."+(mistakes===0?" בלי טעויות, אלופים!":"");
+ sfx.chest();confetti(60);
+ const last=li===LEVELS.length-1;
+ $("win-next").style.display=last?"none":"";
+ $("win-next").onclick=()=>{const ni=li+1;const sc=ni%4===0&&!save.seen[ni];if(sc){save.seen[ni]=1;persist();showStory(ni/4,()=>startLevel(ni))}else startLevel(ni)};
+ $("win-map").onclick=()=>{if(allDone&&!save.seen.win){save.seen.win=1;persist();showStory("win",goMap)}else goMap()};
+ show("s-win");
+}
+updGems();showStory(save.seen.intro?0:0,goMap);
+if(Object.keys(save.done).length){$("story-next").textContent="להמשך ההפלגה ⛵"}
+save.seen.intro=1;persist();
+})();
+</script>
+</body>
+</html>
