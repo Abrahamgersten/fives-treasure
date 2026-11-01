@@ -80,6 +80,24 @@ h1{margin:0;font-size:clamp(22px,5vw,34px);text-shadow:0 3px 0 rgba(0,0,0,.25)}
 .strip{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;margin-top:8px;direction:ltr}
 .strip span{background:#fff;border-radius:12px;padding:4px 10px;font-weight:800;font-size:18px;box-shadow:0 2px 0 #0003}
 .strip span.now{background:var(--gold)}
+.story{font-size:clamp(18px,4.2vw,24px);text-align:center;background:#fff6d6;border-radius:16px;padding:10px 14px;margin-top:8px;line-height:1.5}
+.demo-bar{background:#e1f5e9;border-radius:16px;padding:10px 14px;margin-top:8px;font-weight:700;text-align:center;font-size:20px}
+.legend{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;font-weight:800;font-size:15px}
+.rv{color:#c98a00}.rc{color:#1479a8}.rt{color:#1f9e5a}
+.box.rv{border-color:#c98a00;color:#c98a00}.box.rc{border-color:#1479a8;color:#1479a8}.box.rt{border-color:#1f9e5a;color:#1f9e5a}
+.aid{display:none;background:linear-gradient(#ffe7a0,#f5c86a);border:4px dashed #b8821a;border-radius:20px;padding:10px;margin-top:10px}
+.aid.on{display:block}
+.cnwrap.off .cn{filter:grayscale(1);opacity:.3}
+.cnwrap.off{cursor:pointer}
+.opts{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;max-width:420px;margin:14px auto}
+.opts button{background:linear-gradient(#fff,#d9efff);border-radius:20px;font-size:36px;font-weight:900;padding:16px 0;box-shadow:0 6px 0 #7bb4d2}
+.opts button.good{background:linear-gradient(#7ff0ae,var(--ok));color:#fff;box-shadow:0 6px 0 #17844b}
+.opts button.nope{background:#ffd9d9;box-shadow:0 6px 0 #d49a9a}
+.dq{font-size:clamp(34px,10vw,60px);font-weight:900;text-align:center;direction:ltr;margin:12px 0}
+.joke-img{display:block;max-width:100%;max-height:46vh;margin:8px auto;border-radius:20px;box-shadow:0 6px 0 rgba(0,0,0,.2)}
+audio{width:100%;margin-top:8px}
+.jlist{display:grid;gap:10px;margin-top:10px}
+.jlist button{background:linear-gradient(#fff,#ffe9a8);border-radius:16px;padding:12px;font-weight:800;font-size:18px;box-shadow:0 4px 0 #c99a2a;text-align:center}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
@@ -97,9 +115,38 @@ h1{margin:0;font-size:clamp(22px,5vw,34px);text-shadow:0 3px 0 rgba(0,0,0,.25)}
  <div class="row"><button class="btn" id="story-next">יאללה, מתחילים! ⚓</button></div>
 </section>
 
+<!-- אבחון -->
+<section class="screen card" id="s-diag">
+ <div class="stage-head"><div class="big">🧭 כמה שאלות קטנות להכיר אתכם</div></div>
+ <div class="prog" id="d-prog"></div>
+ <div class="big" id="d-text" style="text-align:center"></div>
+ <div class="stack" id="d-coins" style="margin-top:8px;min-height:0"></div>
+ <div class="dq" id="d-q"></div>
+ <div class="opts" id="d-opts"></div>
+ <div class="row"><button class="btn sec" id="d-skip">לא יודע/ת, ממשיכים 🙂</button></div>
+ <div class="msg" id="d-msg"></div>
+</section>
+<section class="screen card" id="s-diagres">
+ <div class="hero"><div class="parrot">🦜</div><div class="big" id="dr-text"></div></div>
+ <div class="row"><button class="btn" id="dr-go">יוצאים להפלגה! ⛵</button></div>
+</section>
+
+<!-- בדיחה (פרס) -->
+<section class="screen card" id="s-joke">
+ <div class="big" style="text-align:center">🎭 <b>פרס: בדיחה!</b></div>
+ <img class="joke-img" id="j-img" alt="">
+ <div class="big" id="j-title" style="text-align:center;font-weight:800"></div>
+ <audio id="j-audio" controls preload="none"></audio>
+ <div class="row"><button class="btn" id="j-back">המשך ➡️</button></div>
+</section>
+<section class="screen card" id="s-jokes">
+ <div class="stage-head"><div class="big"><b>🎭 הבדיחות שלי</b></div><button class="btn sec" id="jl-back">🗺️ מפה</button></div>
+ <div class="jlist" id="jlist"></div>
+</section>
+
 <!-- מפה -->
 <section class="screen card" id="s-map">
- <div class="stage-head"><div class="big"><b>מפת האוצרות</b> – בחר/י תיבה</div><button class="btn sec" id="re-story">📜 הסיפור</button></div>
+ <div class="stage-head"><div class="big"><b>מפת האוצרות</b> – בחר/י תיבה</div><div class="row" style="margin:0"><button class="btn sec" id="re-story">📜 הסיפור</button><button class="btn sec" id="re-diag">🧭 אבחון מחדש</button><button class="btn sec" id="open-jokes">🎭 בדיחות</button></div></div>
  <div class="strip" id="strip"></div>
  <div class="map" id="map"></div>
 </section>
@@ -122,10 +169,16 @@ h1{margin:0;font-size:clamp(22px,5vw,34px);text-shadow:0 3px 0 rgba(0,0,0,.25)}
 
 <!-- תרגילים -->
 <section class="screen card" id="s-quiz">
- <div class="stage-head"><div class="big">🔑 המנעול של <b id="q-n">10</b> ₪</div><button class="btn sec" id="q-hint">💡 רמז</button></div>
+ <div class="stage-head"><div class="big">🔑 המנעול של <b id="q-n">10</b> ₪</div><div class="row" style="margin:0"><button class="btn sec" id="q-show">👀 הראו לי</button><button class="btn sec" id="q-hint">💡 רמז</button></div></div>
  <div class="prog" id="prog"></div>
+ <div class="demo-bar" id="demo-bar" style="display:none">👀 קודם אני מראה איך עושים. הסתכלו ושימו לב לכל מטבע.</div>
+ <div class="story" id="q-story"></div>
  <div class="eq" id="eq"></div>
+ <div class="legend"><span class="rv">🪙 שווי מטבע</span><span class="rc">🔢 כמה מטבעות</span><span class="rt">💰 סך הכל</span></div>
+ <div class="aid" id="aid"></div>
+ <div class="strip" id="q-strip"></div>
  <div class="hint" id="hint"></div>
+ <div class="row"><button class="btn" id="demo-go" style="display:none">עכשיו אני מנסה! ✋</button></div>
  <div class="pad" id="pad"></div>
  <div class="msg" id="q-msg"></div>
 </section>
@@ -137,6 +190,7 @@ h1{margin:0;font-size:clamp(22px,5vw,34px);text-shadow:0 3px 0 rgba(0,0,0,.25)}
  <div class="big" id="win-text" style="text-align:center"></div>
  <div class="treasure" id="treasure"></div>
  <div class="row"><button class="btn" id="win-next">לתיבה הבאה ➡️</button><button class="btn sec" id="win-map">🗺️ למפה</button></div>
+ <div class="row"><button class="btn" id="win-joke" style="display:none">🎁 קבלו בדיחה!</button></div>
 </section>
 </div>
 <div class="confetti" id="confetti"></div>
@@ -147,7 +201,7 @@ h1{margin:0;font-size:clamp(22px,5vw,34px);text-shadow:0 3px 0 rgba(0,0,0,.25)}
 const $=id=>document.getElementById(id);
 const LEVELS=Array.from({length:19},(_,i)=>10+5*i);
 const KEY="fives-treasure-v1";
-let save={done:{},gems:0,seen:{}};
+let save={done:{},gems:0,seen:{},demo:{},diag:0,skill:1,start:0,jokes:0,jr:{},recent:[]};
 try{Object.assign(save,JSON.parse(localStorage.getItem(KEY)||"{}"))}catch(e){}
 const persist=()=>{try{localStorage.setItem(KEY,JSON.stringify(save))}catch(e){}};
 
@@ -187,10 +241,10 @@ $("re-story").onclick=()=>showStory(0,goMap);
 
 /* ---------- מפה ---------- */
 function stars(l){return save.done[l]||0}
-function unlocked(i){return i===0||stars(LEVELS[i-1])>0}
+function unlocked(i){return i===0||i<=(save.start||0)||stars(LEVELS[i-1])>0}
 function goMap(){
  updGems();const m=$("map");m.innerHTML="";let cur=-1;
- LEVELS.forEach((n,i)=>{const b=document.createElement("button");const u=unlocked(i),s=stars(n);if(u&&!s&&cur<0)cur=i;
+ LEVELS.forEach((n,i)=>{const b=document.createElement("button");const u=unlocked(i),s=stars(n);if(u&&!s&&cur<0&&i>=(save.start||0))cur=i;
   b.className="lv"+(u?"":" lock")+(cur===i&&!s?" cur":"");b.innerHTML=(u?n:"🔒")+"<small>"+(s?"⭐".repeat(s):(u?"🧰":""))+"</small>";
   b.onclick=()=>startLevel(i);m.appendChild(b)});
  $("strip").innerHTML="";[5,10,15,20,25].forEach(n=>{const s=document.createElement("span");s.textContent=n;$("strip").appendChild(s)});
@@ -217,60 +271,125 @@ $("undo").onclick=()=>{if(coins>0){coins--;sfx.undo();renderStack();$("b-msg").t
 $("clear").onclick=()=>{coins=0;sfx.undo();renderStack();$("b-msg").textContent=""};
 $("b-back").onclick=goMap;
 
-/* ---------- תרגילים עם משתנה חסר ---------- */
-let qs=[],qi=0,typed="",mistakes=0,hintShown=false;
+/* ---------- תרגילים: קונקרטי -> חצי-מופשט -> מופשט ---------- */
+let qs=[],qi=0,typed="",mistakes=0,qm=0,demoMode=false,aidTimer=null,aidApi=null;
+const phase=()=>save.skill===0?(li<8?1:(li<15?2:3)):(save.skill===1?(li<6?1:(li<12?2:3)):(li<4?2:3));
+const v=()=>["5","v"],c=k=>[k,"c"],t=n=>[n,"t"],bx=r=>["□",r];
 function makeQs(n){
  const k=n/5;
- const T=[
-  {p:["5","×","□","=",n],a:k,h:"כמה פעמים 5 נכנס ב-"+n+"? "+k+" מטבעות."},
-  {p:["□","×","5","=",n],a:k,h:"הסדר לא משנה בכפל: "+k+" × 5 = "+n},
-  {p:[n,"÷","5","=","□"],a:k,h:"חלקו את "+n+" ל-5 מטבעות בכל ערימה. כמה ערימות?"},
-  {p:[n,"÷","□","=","5"],a:k,h:"כמה קבוצות של 5 יש ב-"+n+"? ספרו מטבעות: "+k},
-  {p:["□","÷","5","=",k],a:n,h:"מה המספר שאם מחלקים ב-5 מקבלים "+k+"? "+k+" × 5"},
-  {p:["5","×",k,"=","□"],a:n,h:"קפצו בחמישיות "+k+" פעמים."},
-  {p:[k,"×","5","=","□"],a:n,h:"קפצו בחמישיות "+k+" פעמים."},
-  {p:["□","×",k,"=",n],a:5,h:"כמה שווה כל מטבע?"},
-  {p:[n,"÷",k,"=","□"],a:5,h:"חלקו את "+n+" ל-"+k+" מטבעות שווים."}
+ const mk=(p,kind,a,h)=>({p,kind,a,h});
+ const hc="ספרו מטבעות של 5 עד שמגיעים ל-"+n+": 5, 10, 15... כמה מטבעות יצאו?";
+ const ht="הדליקו כל מטבע וספרו בקפיצות של 5, "+k+" פעמים.";
+ const hv="נסו מספר. כל מטבע בשווי המספר, ובדקו אם הסך הכל יוצא "+n+".";
+ const all=[
+  mk([v(),"×",bx("c"),"=",t(n)],"count",k,hc),
+  mk([bx("c"),"×",v(),"=",t(n)],"count",k,hc),
+  mk([t(n),"÷",v(),"=",bx("c")],"count",k,hc),
+  mk([t(n),"÷",bx("c"),"=",v()],"count",k,hc),
+  mk([v(),"×",c(k),"=",bx("t")],"total",n,ht),
+  mk([c(k),"×",v(),"=",bx("t")],"total",n,ht),
+  mk([bx("t"),"÷",v(),"=",c(k)],"total",n,ht),
+  mk([bx("v"),"×",c(k),"=",t(n)],"value",5,hv),
+  mk([t(n),"÷",c(k),"=",bx("v")],"value",5,hv)
  ];
- const useable=k>=2?T:T.filter((t,i)=>i<8);
- const pool=useable.slice();const out=[];
- while(out.length<4&&pool.length){out.push(pool.splice(Math.floor(Math.random()*pool.length),1)[0])}
- return out;
+ const ph=phase();
+ let pool=ph===1?[0,2,4,5]:(ph===2?[0,1,2,3,4,5,6,7]:[0,1,2,3,4,5,6,7,8]);
+ pool=pool.sort(()=>Math.random()-.5);
+ const pick=pool.slice(0,4);
+ if(ph===1)pick.sort((a,b)=>(all[a].kind==="total"?1:0)-(all[b].kind==="total"?1:0));
+ return pick.map(i=>all[i]);
 }
+function storyOf(q,n){const k=n/5;
+ return q.kind==="count"?"יש לי מטבעות של 5 ₪. ביחד יש לי "+n+" ₪. כמה מטבעות יש לי?":
+  q.kind==="total"?"יש לי "+k+" מטבעות של 5 ₪. כמה כסף יש לי ביחד?":
+  "יש לי "+k+" מטבעות זהים. ביחד יש לי "+n+" ₪. כמה שווה כל מטבע?"}
 function startQuiz(){
- qs=makeQs(N);qi=0;mistakes=0;$("q-n").textContent=N;nextQ();show("s-quiz")}
-function nextQ(){
- typed="";hintShown=false;$("hint").classList.remove("on");$("q-msg").textContent="";
- const q=qs[qi];const e=$("eq");e.innerHTML="";
- q.p.forEach(t=>{const s=document.createElement(t==="□"?"span":"span");if(t==="□"){s.className="box";s.id="ans";s.textContent="?"}else s.textContent=t;e.appendChild(s)});
- const p=$("prog");p.innerHTML="";qs.forEach((_,i)=>{const d=document.createElement("span");d.className="dot"+(i<qi?" d":(i===qi?" c":""));p.appendChild(d)});
- buildPad();
+ qs=makeQs(N);qi=0;mistakes=0;$("q-n").textContent=N;
+ demoMode=!save.demo[N]&&(phase()===1||[0,6,12].includes(li));
+ nextQ();show("s-quiz")}
+function clearAid(){clearInterval(aidTimer);aidTimer=null;aidApi=null}
+function coinEl(label,lit){const w=document.createElement("span");w.className="cnwrap"+(lit?"":" off");const im=document.createElement("img");im.src="assets/coin5.jpg";im.alt="";im.className="cn";w.appendChild(im);const b=document.createElement("b");b.textContent=label;w.appendChild(b);return w}
+/* עזר מוחשי: מציג את אותה משוואה במטבעות. auto = מנגן לבד */
+function openAid(auto){
+ clearAid();const q=qs[qi],k=N/5,a=$("aid"),sp=[];a.innerHTML="";a.classList.add("on");
+ const st=$("q-strip");st.innerHTML="";for(let i=1;i<=k;i++){const s=document.createElement("span");s.textContent=i*5;st.appendChild(s);sp.push(s)}
+ const row=document.createElement("div");row.className="stack";const lab=document.createElement("div");lab.className="msg";
+ const ctl=document.createElement("div");ctl.className="row";a.append(row,lab,ctl);
+ let n=0;
+ if(q.kind==="value"){
+  for(let i=0;i<k;i++)row.appendChild(coinEl("?",true));
+  const show1=val=>{row.querySelectorAll("b").forEach(b=>b.textContent=val||"?");
+   const tot=(+val||0)*k;lab.textContent=val?(k+" מטבעות × "+val+" = "+tot+" ₪"+(tot===N?" ✅ בול!":(tot>N?" – יותר מדי, נסו קטן יותר":" – עוד לא מגיע ל-"+N+", נסו גדול יותר"))):"הקלידו מספר ותראו מה יוצא"};
+  lab.textContent="הקלידו מספר ותראו מה יוצא";
+  if(!auto){aidApi={guess:show1};return}
+  const g=[1,10,5];let gi=0;
+  aidTimer=setInterval(()=>{if(gi>=g.length){clearAid();setTimeout(demoDone,1200);return}show1(g[gi]);say(String(g[gi]));gi++},1800);
+  return}
+ const total=q.kind==="total";
+ if(total)for(let i=0;i<k;i++)row.appendChild(coinEl("",false));
+ const stepF=()=>{
+  if(total){if(n>=k)return false;const w=row.children[n];w.classList.remove("off");w.querySelector("b").textContent=(n+1)*5}
+  else{if(n*5>=N)return false;row.appendChild(coinEl((n+1)*5,true))}
+  sp[n]&&sp[n].classList.add("now");n++;sfx.coin(n);say(String(n*5));
+  if(total)lab.textContent=n<k?"סך הכל עד עכשיו: "+n*5+" ₪":"סך הכל: "+N+" ₪. הקלידו את הסכום";
+  else lab.textContent=n*5<N?"עד עכשיו: "+n*5+" ₪. צריך "+N:"הגענו ל-"+N+" ₪! כמה מטבעות יש כאן? ספרו אותם";
+  return true};
+ if(auto){lab.textContent="תראו: סופרים בקפיצות של 5";aidTimer=setInterval(()=>{if(!stepF()){clearAid();setTimeout(demoDone,1500)}},950)}
+ else{
+  const bt=document.createElement("button");bt.className="btn sec";bt.textContent=total?"🪙 הדליקו מטבע":"➕ הוסיפו מטבע של 5";bt.onclick=stepF;ctl.appendChild(bt);
+  lab.textContent=total?"לחצו על הכפתור לספור מטבע אחרי מטבע":"הוסיפו מטבעות עד שמגיעים ל-"+N;
+  row.onclick=e=>{if(total&&e.target.closest(".cnwrap.off"))stepF()};
+ }
 }
+function demoDone(){
+ if(!demoMode||qi!==0)return;const q=qs[qi];
+ $("ans").textContent=q.a;
+ $("q-msg").textContent="✨ התשובה היא "+q.a+". עכשיו תורכם!";
+ $("demo-go").style.display="";}
+function nextQ(){
+ clearAid();typed="";qm=0;$("hint").classList.remove("on");$("q-msg").textContent="";$("aid").innerHTML="";$("aid").classList.remove("on");$("q-strip").innerHTML="";$("demo-go").style.display="none";
+ const q=qs[qi];const e=$("eq");e.innerHTML="";
+ q.p.forEach(x=>{const s=document.createElement("span");
+  if(Array.isArray(x)){if(x[0]==="□"){s.className="box r"+x[1];s.id="ans";s.textContent="?"}else{s.className="r"+x[1];s.textContent=x[0]}}else s.textContent=x;e.appendChild(s)});
+ $("q-story").textContent=storyOf(q,N);
+ const p=$("prog");p.innerHTML="";qs.forEach((_,i)=>{const d=document.createElement("span");d.className="dot"+(i<qi?" d":(i===qi?" c":""));p.appendChild(d)});
+ const isDemo=demoMode&&qi===0;
+ $("pad").style.display=isDemo?"none":"";$("demo-bar").style.display=isDemo?"":"none";
+ buildPad();
+ if(isDemo){setTimeout(()=>openAid(true),600);say(storyOf(q,N))}
+ else if(phase()===1)openAid(false);
+}
+$("demo-go").onclick=()=>{demoMode=false;save.demo[N]=1;persist();qs=makeQs(N);qi=0;nextQ()};
 function buildPad(){
  const p=$("pad");p.innerHTML="";
  ["1","2","3","4","5","6","7","8","9","⌫","0","✔"].forEach(k=>{const b=document.createElement("button");b.textContent=k;if(k==="✔")b.className="go";b.onclick=()=>press(k);p.appendChild(b)})}
 function press(k){
+ if(demoMode&&qi===0)return;
  sfx.key();
  if(k==="⌫")typed=typed.slice(0,-1);
  else if(k==="✔")return check();
  else if(typed.length<3)typed+=k;
  $("ans").textContent=typed||"?";
+ if(aidApi&&aidApi.guess)aidApi.guess(typed);
 }
 function check(){
  if(!typed)return;
  const q=qs[qi],ans=$("ans");
  if(+typed===q.a){
-  ans.textContent=q.a;ans.style.cssText="border-style:solid;border-color:#2fbf71;color:#2fbf71";sfx.ok();confetti(10);$("q-msg").textContent="🎉 נכון!";
-  setTimeout(()=>{qi++;qi>=qs.length?finish():nextQ()},900);
+  clearAid();ans.textContent=q.a;ans.style.cssText="border-style:solid;border-color:#2fbf71;color:#2fbf71";sfx.ok();confetti(10);
+  $("q-msg").textContent="🎉 נכון! "+(N/5)+" מטבעות × 5 ₪ = "+N+" ₪";
+  setTimeout(()=>{qi++;qi>=qs.length?finish():nextQ()},1700);
  }else{
-  mistakes++;sfx.bad();ans.classList.remove("shake");void ans.offsetWidth;ans.classList.add("shake");
-  $("q-msg").textContent="🤔 כמעט! נסו שוב.";typed="";setTimeout(()=>{ans.textContent="?"},400);
-  if(mistakes>=2||true){showHint()}
+  mistakes++;qm++;sfx.bad();ans.classList.remove("shake");void ans.offsetWidth;ans.classList.add("shake");
+  typed="";setTimeout(()=>{ans.textContent="?"},400);
+  if(qm===1){$("q-msg").textContent="🤔 לא נורא, בואו נבדוק עם מטבעות.";openAid(false)}
+  else if(qm===2){$("q-msg").textContent="🤝 בואו נספור ביחד, ואז תקלידו.";openAid(true);showHint()}
+  else{$("q-msg").textContent="אני מראה את התשובה, תעתיקו אותה 🙂";showHint();openAid(true)}
  }
 }
-function showHint(){const q=qs[qi],h=$("hint");h.textContent="💡 "+q.h+(coinPic(q)?"":"");h.classList.add("on")}
-function coinPic(){return false}
-$("q-hint").onclick=showHint;
+function showHint(){const q=qs[qi],h=$("hint");h.textContent="💡 "+q.h;h.classList.add("on")}
+$("q-hint").onclick=()=>{showHint();if(!$("aid").classList.contains("on"))openAid(false)};
+$("q-show").onclick=()=>openAid(true);
 document.addEventListener("keydown",e=>{
  if(!$("s-quiz").classList.contains("on"))return;
  if(/^[0-9]$/.test(e.key))press(e.key);else if(e.key==="Backspace")press("⌫");else if(e.key==="Enter")press("✔")});
@@ -284,7 +403,15 @@ function finish(){
  $("stars").textContent="⭐".repeat(st)+"☆".repeat(3-st);
  $("treasure").textContent="";for(let i=0;i<gain;i++){const s=document.createElement("span");s.textContent="💎";$("treasure").appendChild(s)}
  const allDone=LEVELS.every(n=>stars(n)>0);
- $("win-text").innerHTML="🔓 התיבה של <b>"+N+" ₪</b> נפתחה! קיבלתם <b>"+gain+"</b> יהלומים."+(mistakes===0?" בלי טעויות, אלופים!":"");
+ let note="";save.recent=(save.recent||[]).concat(mistakes).slice(-3);const rc=save.recent;
+ if(save.skill<2&&rc.length>=2&&rc.slice(-2).every(x=>x===0)){save.skill++;save.recent=[];note=" 🚀 עולים רמה: פחות עזרה ויותר מגוון בתרגילים."}
+ else if(save.skill>0&&mistakes>=5){save.skill--;save.recent=[];note=" 💪 התאמתי לכם: יותר עזרה עם מטבעות בתיבות הבאות."}
+ const dueJoke=((li+1)%4===0||li===LEVELS.length-1)&&!save.jr[li];
+ if(dueJoke){save.jr[li]=1;save.jokes=(save.jokes||0)+1}
+ persist();
+ $("win-joke").style.display=dueJoke?"":"none";
+ $("win-joke").onclick=()=>playJoke(save.jokes-1,()=>show("s-win"));
+ $("win-text").innerHTML="🔓 התיבה של <b>"+N+" ₪</b> נפתחה! קיבלתם <b>"+gain+"</b> יהלומים."+(mistakes===0?" בלי טעויות, אלופים!":"")+(dueJoke?" 🎁 סיימתם מקטע, מגיעה לכם בדיחה!":"")+note;
  sfx.chest();confetti(60);
  const last=li===LEVELS.length-1;
  $("win-next").style.display=last?"none":"";
@@ -292,7 +419,70 @@ function finish(){
  $("win-map").onclick=()=>{if(allDone&&!save.seen.win){save.seen.win=1;persist();showStory("win",goMap)}else goMap()};
  show("s-win");
 }
-updGems();showStory(save.seen.intro?0:0,goMap);
+
+/* ---------- בדיחות כפרס (מהאתר "זה קרה באמת") ---------- */
+const JB="https://abrahamgersten.github.io/zeh-kara-beemet/assets/";
+const JT=["אלפי מנשה","הפרה שלומדת שפה · האבא הכי נמוך","הרשלי והמאפייה","הדיאטה של הרופא · הווייז והחילזון","החתול השחור · הזריקה · הנמלה שלקחה ברצינות","הארון של המשוגעים · סבא תנין","שני כיסים · מאז שהייתי גור","המזגן של הקמצן · השכנים בשתיים בלילה","האבק בסלון · המחלה של הפרות · נמלות במעלית","כרטיסיית ילדים · הנהג שכולם רוצים · זקן וגנב"];
+const jid=i=>String(i%10+1).padStart(2,"0");
+function playJoke(i,back){
+ const n=jid(i),a=$("j-audio"),sfx2=(n==="01"||n==="03")?"-sfx2":"";
+ $("j-img").src=JB+"images/jokes/joke-"+n+".jpg";$("j-title").textContent=JT[i%10];
+ a.pause();a.src=JB+"audio/jokes/joke-"+n+sfx2+".mp3";
+ $("j-back").onclick=()=>{a.pause();back()};
+ show("s-joke");try{const p=a.play();p&&p.catch&&p.catch(()=>{})}catch(e){}}
+function openJokes(){
+ const l=$("jlist");l.innerHTML="";const c=Math.min(save.jokes||0,10);
+ if(!c){const d=document.createElement("div");d.className="big";d.style.textAlign="center";d.textContent="עוד אין בדיחות. סיימו 4 תיבות וקבלו את הראשונה! 🎁";l.appendChild(d)}
+ for(let i=0;i<c;i++){const b=document.createElement("button");b.textContent="🎭 "+JT[i];b.onclick=()=>playJoke(i,openJokes);l.appendChild(b)}
+ show("s-jokes")}
+$("open-jokes").onclick=openJokes;$("jl-back").onclick=goMap;
+
+/* ---------- אבחון התחלתי ---------- */
+const rnd=(a,b)=>a+Math.floor(Math.random()*(b-a+1));
+function diagQs(){
+ const q=[],f=(t,a,text,extra)=>q.push(Object.assign({t,a,text},extra));
+ let k=rnd(2,4);f(1,k*5,"כמה כסף יש כאן?",{coins:k});
+ k=rnd(5,7);f(1,k*5,"כמה כסף יש כאן?",{coins:k});
+ let s=rnd(1,4)*5;f(2,s+10,"השלימו את הספירה בקפיצות של 5",{seq:[s,s+5,"?",s+15]});
+ s=rnd(6,10)*5;f(2,s+10,"השלימו את הספירה בקפיצות של 5",{seq:[s,s+5,"?",s+15]});
+ k=rnd(3,6);f(3,k*5,"כמה זה?",{eq:k+" × 5 = ?"});
+ k=rnd(7,10);f(3,k*5,"כמה זה?",{eq:k+" × 5 = ?"});
+ k=rnd(4,8);f(4,k,"כמה זה?",{eq:k*5+" ÷ 5 = ?"});
+ k=rnd(6,10);f(4,k,"איזה מספר חסר?",{eq:"5 × ? = "+k*5});
+ k=rnd(9,16);f(5,k,"איזה מספר חסר?",{eq:"? × 5 = "+k*5});
+ k=rnd(12,19);f(5,k,"כמה זה?",{eq:k*5+" ÷ 5 = ?"});
+ return q}
+let dq=[],di=0,dcorrect=0,dwrongRow=0,dlock=false;
+function goDiag(){dq=diagQs();di=0;dcorrect=0;dwrongRow=0;dlock=false;$("d-msg").textContent="";show("s-diag");diagShow()}
+$("re-diag").onclick=goDiag;
+function diagShow(){
+ const q=dq[di];dlock=false;$("d-msg").textContent="";
+ const p=$("d-prog");p.innerHTML="";dq.forEach((_,i)=>{const d=document.createElement("span");d.className="dot"+(i<di?" d":(i===di?" c":""));p.appendChild(d)});
+ $("d-text").textContent=q.text;
+ const cz=$("d-coins");cz.innerHTML="";
+ if(q.coins)for(let i=0;i<q.coins;i++){const im=document.createElement("img");im.src="assets/coin5.jpg";im.alt="";im.className="cn";cz.appendChild(im)}
+ $("d-q").textContent=q.seq?q.seq.join("  ,  "):(q.eq||"");
+ let o=new Set([q.a]);const st=q.t<=2?5:1;
+ [q.a+st,q.a-st,q.a+2*st,q.a+(q.t<=2?10:2)].forEach(x=>{if(x>0&&o.size<4)o.add(x)});
+ let n=1;while(o.size<4){o.add(q.a+n*st+n);n++}
+ const arr=[...o].sort(()=>Math.random()-.5),box=$("d-opts");box.innerHTML="";
+ arr.forEach(x=>{const b=document.createElement("button");b.textContent=x;b.onclick=()=>diagPick(b,x===q.a);box.appendChild(b)})}
+function diagPick(b,ok){
+ if(dlock)return;dlock=true;sfx.key();
+ if(ok){b.classList.add("good");dcorrect++;dwrongRow=0;sfx.ok();$("d-msg").textContent="👍 יפה!"}
+ else{b.classList.add("nope");dwrongRow++;$("d-msg").textContent="🙂 בסדר גמור, ממשיכים."}
+ setTimeout(diagNext,900)}
+$("d-skip").onclick=()=>{if(dlock)return;dlock=true;dwrongRow++;$("d-msg").textContent="🙂 בסדר גמור, ממשיכים.";setTimeout(diagNext,700)};
+function diagNext(){di++;if(dwrongRow>=2||di>=dq.length)diagEnd();else diagShow()}
+function diagEnd(){
+ const c=dcorrect;let sk=c<=3?0:(c<=7?1:2);
+ save.skill=sk;save.start=[0,3,6][sk];save.diag=1;save.recent=[];persist();
+ const msg=[
+  "סיימנו! נתחיל בקצב נוח: המון מטבעות לעזרה, והסבר צעד אחרי צעד. אין מרוץ, כל תיבה בזמן שלך. 🪙",
+  "יפה מאוד! אתם כבר מכירים חלק מהחמישיות. אפתח לכם את התיבות מ-"+LEVELS[3]+" ₪, ועדיין אעזור עם מטבעות כשצריך. 👍",
+  "וואו, אתם חזקים! אפתח לכם את התיבות מ-"+LEVELS[6]+" ₪, עם פחות עזרה ויותר חידות. אם יהיה קשה, אחזור לעזור. 🚀"][sk];
+ $("dr-text").textContent=msg;$("dr-go").onclick=goMap;show("s-diagres");say(msg.slice(0,120))}
+updGems();showStory(0,save.diag?goMap:goDiag);
 if(Object.keys(save.done).length){$("story-next").textContent="להמשך ההפלגה ⛵"}
 save.seen.intro=1;persist();
 })();
